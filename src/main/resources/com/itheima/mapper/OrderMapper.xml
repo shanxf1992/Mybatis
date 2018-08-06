@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.itheima.mapper.OrderMapper">
+
+    <resultMap id="queryOrder" type="com.itheima.domain.Order">
+        <id property="oid" column="oid"/>
+        <result property="userId" column="user_id"/>
+        <result property="orderNumber" column="order_number"/>
+    </resultMap>
+    <select id="queryOrderById" resultMap="queryOrder">
+        SELECT *
+        from tb_order
+        WHERE oid= #{id}
+    </select>
+
+
+    <!--1 根据订单号 查询订单的同时，查询出订单所属用户-->
+    <resultMap id="queryOrderWithUser" type="com.itheima.domain.Order">
+        <id property="oid" column="oid"/>
+        <result property="userId" column="user_id"/>
+        <result property="orderNumber" column="order_number"/>
+        <association property="user" javaType="com.itheima.domain.User">
+            <id property="id" column="id"/>
+            <result property="userName" column="user_name"/>
+        </association>
+    </resultMap>
+
+    <select id="queryOrderWithUserInfo" resultMap="queryOrderWithUser">
+        SELECT *
+        FROM tb_order o LEFT JOIN tb_user u ON o.user_id = u.id
+        WHERE o.oid = #{orderId}
+    </select>
+
+
+    <!--2 根据订单号 查询订单，并且查询出所有订单详情及所属用户-->
+    <resultMap id="queryOrderWithUserAndOrderItems" type="com.itheima.domain.Order">
+        <id property="oid" column="oid"/>
+        <result property="userId" column="user_id"/>
+        <result property="orderNumber" column="order_number"/>
+        <association property="user" javaType="com.itheima.domain.User">
+            <id property="id" column="id"/>
+            <result property="userName" column="user_name"/>
+        </association>
+        <collection property="orderitemList" javaType="list" ofType="com.itheima.domain.Orderitem">
+            <id property="itemId" column="item_id"/>
+            <result property="totalPrice" column="total_price"/>
+        </collection>
+    </resultMap>
+
+    <select id="queryOrderWithUserAndOrderItemsInfo" resultMap="queryOrderWithUserAndOrderItems">
+        SELECT *
+        FROM tb_order o
+        LEFT JOIN tb_user u ON o.user_id = u.id
+        LEFT JOIN tb_orderitem oi ON o.oid = oi.order_id
+        WHERE o.oid = #{orderId}
+    </select>
+
+
+    <!--3  根据订单号 查询订单，查询出所属用户，并且查询出订单的详情，及订单详情中的对应的商品信息-->
+    <resultMap id="queryOrderWithUserAndOrderAndOrderItemsAndProduct" type="com.itheima.domain.Order">
+        <id property="oid" column="oid"/>
+        <result property="userId" column="user_id"/>
+        <result property="orderNumber" column="order_number"/>
+        <association property="user" javaType="com.itheima.domain.User" autoMapping="true">
+            <id property="id" column="id"/>
+            <result property="userName" column="user_name"/>
+        </association>
+        <collection property="orderitemList" javaType="list" ofType="com.itheima.domain.Orderitem" autoMapping="true">
+            <id property="itemId" column="item_id"/>
+            <result property="totalPrice" column="total_price"/>
+            <association property="product" javaType="com.itheima.domain.Product" autoMapping="true">
+                <id property="pid" column="pid"/>
+            </association>
+        </collection>
+    </resultMap>
+    <select id="queryOrderWithUserAndOrderAndOrderItemsAndProductInfo" resultMap="queryOrderWithUserAndOrderAndOrderItemsAndProduct">
+        SELECT *
+        FROM tb_order o
+        LEFT JOIN tb_user u ON o.user_id = u.id
+        LEFT JOIN tb_orderitem oi ON o.oid = oi.order_id
+        LEFT JOIN tb_product p ON oi.product_id = p.pid
+        WHERE o.oid = #{orderId}
+    </select>
+
+</mapper>
